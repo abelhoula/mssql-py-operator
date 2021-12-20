@@ -18,8 +18,9 @@
     ```
 
  # Setup Local sql server 2019 with docker
- pwd: mssql-pass1
-port: 1433
+ * username: sa
+ * pwd: mssql-pass1
+ * port: 1433
 
 1) Prepare sql server 2019 instance with docker
 
@@ -30,4 +31,13 @@ port: 1433
 
    ```bash
    docker exec -it mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P mssql-pass1
+   ```
+
+
+# Local testing cli
+
+* Show all logins where the password was changed within 1 days and set to never expire
+
+   ```bash
+    python -m mssql check --server localhost --database test --username sa --password mssql-pass1 --port 1433
    ```
