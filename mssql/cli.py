@@ -2,11 +2,11 @@
 # mssql/cli.py
 
 from typing import Optional
-import pyodbc 
 import csv
+from csv import DictReader
 import typer
 
-from mssql import __app_name__, __version__
+from mssql import __app_name__, __version__, config
 
 app = typer.Typer()
 
@@ -16,35 +16,35 @@ def _version_callback(value: bool) -> None:
         typer.echo(f"{__app_name__} v{__version__}")
         raise typer.Exit()
 
-
 @app.command()
-def check(server: str = None, database: str = None, username: str = None, password:str = None, port: int = None):
+def check(server: str = None, database: str = None, username: str = None, password:str = None, port: int = None, lock: bool = None):
     """Show all logins where the password was changed within 364 days and set to never expire"""
-    print("tcp:"+server+"1433")
-    test = mssqlCheck(server,database,username,password,port)
 
-
-def mssqlCheck(server: str, database: str, username: str, password: str = None, port: int = None):
-# Some other example server values are
-# server = 'localhost\sqlexpress' # for a named instance
-# server = 'myserver,port' # to specify an alternate port
     header = ['name', 'is_expiration_checked']
-    dsn = 'tcp:'+server+','+str(port)
-    cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+dsn+';DATABASE='+database+';UID='+username+';PWD='+ password)
-    cursor = cnxn.cursor()
+    #get db conex
+    cursor = config.mmsqlconx(server,database,username,password,port).cursor()
 
     #-- Show all logins where the password was changed within the last day (for testing purpose)
-    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -1, GETDATE()) and is_expiration_checked = 0;") 
-    row = cursor.fetchone()
+    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -12, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;") 
+    logins = cursor.fetchone()
+
     #report
     f = open('report.csv', 'w')
     writer = csv.writer(f)
     writer.writerow(header)
-    while row:
-        print(row[0])
-        writer.writerow(row)
-        row = cursor.fetchone()
+    while logins:
+        print(logins[0])
+        writer.writerow(logins)
+        logins = cursor.fetchone()
+    f.close()
+    cursor.close()
 
+    if lock:
+        with open('report.csv', 'r') as sql_logins:
+            csv_dict_reader = DictReader(sql_logins)
+            for row in csv_dict_reader:
+                print("locked ===> "+row['name'])
+                config.disablelogin(row["name"], config.mmsqlconx(server,database,username,password,port))
         
 def main(
     version: Optional[bool] = typer.Option(

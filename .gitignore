@@ -44,3 +44,5 @@ nodeLanguageServer.*/**
 dist/**
 **/__pycache__/
 report.csv
+build
+mssql/mssql_py.egg-info/
