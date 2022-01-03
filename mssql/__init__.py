@@ -6,7 +6,7 @@ __version__ = "0.1.0"
 
 (
     SUCCESS,
-    DIR_ERROR,
+    DB_CONECT_ERROR,
     FILE_ERROR,
     DB_READ_ERROR,
     DB_WRITE_ERROR,
@@ -15,7 +15,7 @@ __version__ = "0.1.0"
 ) = range(7)
 
 ERRORS = {
-    DIR_ERROR: "config directory error",
+    DB_CONECT_ERROR: "conection to sql server error ",
     FILE_ERROR: "config file error",
     DB_READ_ERROR: "database read error",
     DB_WRITE_ERROR: "database write error",

@@ -11,21 +11,14 @@ from mssql import __app_name__, __version__, config
 app = typer.Typer()
 
 @app.command()
-def _version_callback(value: bool) -> None:
-    if value:
-        typer.echo(f"{__app_name__} v{__version__}")
-        raise typer.Exit()
-
-@app.command()
 def check(server: str = None, database: str = None, username: str = None, password:str = None, port: int = None, lock: bool = None):
     """Show all logins where the password was changed within 364 days and set to never expire"""
-
     header = ['name', 'is_expiration_checked']
     #get db conex
     cursor = config.mmsqlconx(server,database,username,password,port).cursor()
 
     #-- Show all logins where the password was changed within the last day (for testing purpose)
-    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -12, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;") 
+    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -20, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;") 
     logins = cursor.fetchone()
 
     #report
@@ -45,7 +38,13 @@ def check(server: str = None, database: str = None, username: str = None, passwo
             for row in csv_dict_reader:
                 print("locked ===> "+row['name'])
                 config.disablelogin(row["name"], config.mmsqlconx(server,database,username,password,port))
-        
+
+@app.command()
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"{__app_name__} v{__version__}")
+        raise typer.Exit()
+
 def main(
     version: Optional[bool] = typer.Option(
         None,
