@@ -11,7 +11,7 @@ def mmsqlconx(server: str, database: str, username: str, password: str = None, p
         dsn = 'tcp:'+server+','+str(port)
         cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+dsn+';DATABASE='+database+';UID='+username+';PWD='+ password)
     except pyodbc.Error as ex:
-        typer.echo(f"{ERRORS[1]}")
+        typer.echo(f"{ERRORS}")
         raise typer.Exit()
     
     return cnxn

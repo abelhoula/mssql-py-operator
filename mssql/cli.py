@@ -18,7 +18,8 @@ def check(server: str = None, database: str = None, username: str = None, passwo
     cursor = config.mmsqlconx(server,database,username,password,port).cursor()
 
     #-- Show all logins where the password was changed within the last day (for testing purpose)
-    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -20, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;") 
+    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE modify_date < DATEADD(dd, 0, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;")
+   # cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -1, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;") 
     logins = cursor.fetchone()
 
     #report
