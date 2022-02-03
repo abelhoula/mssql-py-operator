@@ -13,12 +13,12 @@ app = typer.Typer()
 @app.command()
 def check(server: str = None, database: str = None, username: str = None, password:str = None, port: int = None, lock: bool = None):
     """Show all logins where the password was changed within 364 days and set to never expire"""
-    header = ['name', 'is_expiration_checked']
+    header = ['name', 'is_expiration_checked', 'modify_date']
     #get db conex
     cursor = config.mmsqlconx(server,database,username,password,port).cursor()
 
     #-- Show all logins where the password was changed within the last day (for testing purpose)
-    cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE modify_date < DATEADD(dd, 0, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;")
+    cursor.execute("SELECT name, is_expiration_checked, modify_date FROM sys.sql_logins WHERE modify_date < DATEADD(dd, 0, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;")
    # cursor.execute("SELECT name, is_expiration_checked FROM sys.sql_logins WHERE LOGINPROPERTY([name], 'PasswordLastSetTime') > DATEADD(dd, -1, GETDATE()) and is_expiration_checked = 0 and is_disabled = 0;") 
     logins = cursor.fetchone()
 
